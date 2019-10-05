@@ -80,6 +80,10 @@ public extension NSWindowController {
             nextResponder.presentError(error, didPresentHandler: handler)
             return
         }
+        if let document = document as? NSDocument {
+            document.presentError(error, didPresentHandler: handler)
+            return
+        }
         if error.isCancelled {
             return
         }
@@ -94,6 +98,18 @@ public extension NSWindowController {
                 }
             }
         }
+    }
+}
+
+extension NSDocumentController {
+    @objc open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+        NSApplication.shared.presentError(willPresentError(error), didPresentHandler: handler)
+    }
+}
+
+extension NSDocument {
+    @objc open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+        NSDocumentController.shared.presentError(willPresentError(error), didPresentHandler: handler)
     }
 }
 

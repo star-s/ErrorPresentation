@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension Error {
+extension Error {
     var isNonUserVisible: Bool {
         switch self {
         case let error as CocoaError:
@@ -21,7 +21,6 @@ public extension Error {
 }
 
 public extension LocalizedError where Self: RawRepresentable, Self.RawValue == String {
-    
     var errorDescription: String? {
         return self.rawValue
     }

@@ -6,22 +6,17 @@
 //
 
 import Foundation
-  
+
 public extension Error {
-    var isCancelled: Bool {
-        return false
-    }
-}
-
-public extension Error where Self == CocoaError {
-    var isCancelled: Bool {
-        return self.code == .userCancelled
-    }
-}
-
-public extension Error where Self == URLError {
-    var isCancelled: Bool {
-        return self.code == .cancelled
+    var isNonUserVisible: Bool {
+        switch self {
+        case let error as CocoaError:
+            return error.code == .userCancelled
+        case let error as URLError:
+            return error.code == .cancelled
+        default:
+            return false
+        }
     }
 }
 

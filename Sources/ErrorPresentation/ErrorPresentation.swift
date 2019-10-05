@@ -28,7 +28,7 @@ public extension UIApplication {
 
     @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         let error = willPresentError(error)
-        if error.isCancelled {
+        if error.isNonUserVisible {
             return
         }
         if let window = windows.first(where: { return $0.isKeyWindow }) {
@@ -56,7 +56,7 @@ extension NSResponder {
 public extension NSApplication {
     @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         let error = willPresentError(error)
-        if error.isCancelled {
+        if error.isNonUserVisible {
             return
         }
         if let window = windows.first(where: { return $0.isKeyWindow && $0.isVisible }) {

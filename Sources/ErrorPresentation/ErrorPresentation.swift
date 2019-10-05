@@ -93,13 +93,43 @@ extension NSResponder {
 
 public extension NSApplication {
     @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
-        let recoveryResult = presentError(willPresentError(error))
-        if let handler = handler {
-            DispatchQueue.main.async {
-                handler(recoveryResult)
+        let error = willPresentError(error)
+        if error.isCancelled {
+            return
+        }
+        if let window = mainWindow {
+            NSAlert(error: error).beginSheetModal(for: window) { (response) in
+                if let handler = handler {
+                    if let error = error as? RecoverableError {
+                        error.attemptRecovery(optionIndex: response.rawValue, resultHandler: handler)
+                    } else {
+                        handler(false)
+                    }
+                }
             }
         }
     }
 }
+
+public extension NSWindowController {
+    @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+        let error = willPresentError(error)
+        if error.isCancelled {
+            return
+        }
+        if let window = window {
+            NSAlert(error: error).beginSheetModal(for: window) { (response) in
+                if let handler = handler {
+                    if let error = error as? RecoverableError {
+                        error.attemptRecovery(optionIndex: response.rawValue, resultHandler: handler)
+                    } else {
+                        handler(false)
+                    }
+                }
+            }
+        }
+    }
+}
+
 #endif
 

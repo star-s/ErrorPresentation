@@ -101,6 +101,17 @@ public extension NSWindowController {
     }
 }
 
+public extension NSWindow {
+    @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+        let error = willPresentError(error)
+        if let nextResponder = nextResponder {
+            nextResponder.presentError(error, didPresentHandler: handler)
+        } else {
+            NSApplication.shared.presentError(error, didPresentHandler: handler)
+        }
+    }
+}
+
 extension NSDocumentController {
     @objc open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         NSApplication.shared.presentError(willPresentError(error), didPresentHandler: handler)

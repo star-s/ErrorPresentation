@@ -1,23 +1,3 @@
-import Foundation
-  
-public extension Error {
-    var isCancelled: Bool {
-        return false
-    }
-}
-
-public extension Error where Self == CocoaError {
-    var isCancelled: Bool {
-        return self.code == .userCancelled
-    }
-}
-
-public extension Error where Self == URLError {
-    var isCancelled: Bool {
-        return self.code == .cancelled
-    }
-}
-
 #if canImport(UIKit)
 import UIKit
 
@@ -52,34 +32,17 @@ public extension UIApplication {
         if error.isCancelled {
             return
         }
-        var errorDescription: String?
-        var recoverySuggestion: String?
-        
-        if let localizedError = error as? LocalizedError {
-            errorDescription = localizedError.errorDescription
-            recoverySuggestion = localizedError.recoverySuggestion
-        } else {
-            errorDescription = error.localizedDescription
-        }
-        let alert = UIAlertController(title: errorDescription, message: nil, preferredStyle: .alert)
-
-        if let recoverableError = error as? RecoverableError {
-            alert.message = recoverySuggestion
-            let options = recoverableError.recoveryOptions
-            let indexOfTheLast = options.count - 1
-            
-            for option in options.enumerated() {
-                let action = UIAlertAction(title: option.element, style: option.offset == indexOfTheLast ? .cancel : .default) { (action) in
-                    recoverableError.attemptRecovery(optionIndex: option.offset) { handler?($0) }
+        if let window = windows.first(where: { return $0.isKeyWindow }) {
+            UIAlert(error: error).beginSheetModal(for: window) { (buttonNumber) in
+                if let handler = handler {
+                    if let error = error as? RecoverableError {
+                        error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
+                    } else {
+                        handler(false)
+                    }
                 }
-                alert.addAction(action)
             }
-        } else {
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (_) in
-                handler?(false)
-            }))
         }
-        windows.first?.rootViewController?.present(alert, animated: true, completion: nil)
     }
 }
 #elseif canImport(AppKit)
@@ -101,7 +64,7 @@ public extension NSApplication {
             NSAlert(error: error).beginSheetModal(for: window) { (response) in
                 if let handler = handler {
                     if let error = error as? RecoverableError {
-                        error.attemptRecovery(optionIndex: response.rawValue, resultHandler: handler)
+                        error.attemptRecovery(optionIndex: response.buttonNumber, resultHandler: handler)
                     } else {
                         handler(false)
                     }
@@ -121,13 +84,19 @@ public extension NSWindowController {
             NSAlert(error: error).beginSheetModal(for: window) { (response) in
                 if let handler = handler {
                     if let error = error as? RecoverableError {
-                        error.attemptRecovery(optionIndex: response.rawValue, resultHandler: handler)
+                        error.attemptRecovery(optionIndex: response.buttonNumber, resultHandler: handler)
                     } else {
                         handler(false)
                     }
                 }
             }
         }
+    }
+}
+
+extension NSApplication.ModalResponse {
+    var buttonNumber: Int {
+        return rawValue - 1000
     }
 }
 

@@ -28,7 +28,6 @@ public extension UIApplication {
 
     @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         let error = willPresentError(error)
-        
         if error.isCancelled {
             return
         }
@@ -60,7 +59,7 @@ public extension NSApplication {
         if error.isCancelled {
             return
         }
-        if let window = mainWindow {
+        if let window = windows.first(where: { return $0.isKeyWindow && $0.isVisible }) {
             NSAlert(error: error).beginSheetModal(for: window) { (response) in
                 if let handler = handler {
                     if let error = error as? RecoverableError {
@@ -77,6 +76,10 @@ public extension NSApplication {
 public extension NSWindowController {
     @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         let error = willPresentError(error)
+        if let nextResponder = nextResponder {
+            nextResponder.presentError(error, didPresentHandler: handler)
+            return
+        }
         if error.isCancelled {
             return
         }

@@ -76,27 +76,10 @@ public extension NSApplication {
 public extension NSWindowController {
     @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         let error = willPresentError(error)
-        if let nextResponder = nextResponder {
-            nextResponder.presentError(error, didPresentHandler: handler)
-            return
-        }
         if let document = document as? NSDocument {
             document.presentError(error, didPresentHandler: handler)
-            return
-        }
-        if error.isCancelled {
-            return
-        }
-        if let window = window {
-            NSAlert(error: error).beginSheetModal(for: window) { (response) in
-                if let handler = handler {
-                    if let error = error as? RecoverableError {
-                        error.attemptRecovery(optionIndex: response.buttonNumber, resultHandler: handler)
-                    } else {
-                        handler(false)
-                    }
-                }
-            }
+        } else {
+            NSApplication.shared.presentError(error, didPresentHandler: handler)
         }
     }
 }

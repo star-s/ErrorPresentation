@@ -1,13 +1,13 @@
 #if canImport(UIKit)
 import UIKit
 
-extension UIResponder {
+@objc extension UIResponder {
     
-    @objc open func willPresentError(_ error: Error) -> Error {
+    open func willPresentError(_ error: Error) -> Error {
         return error
     }
 
-    @objc open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
+    open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
         if let next = next {
             next.presentError(willPresentError(error), didPresentHandler: handler)
         } else {
@@ -20,9 +20,9 @@ extension UIResponder {
     @objc optional func application(_ application: UIApplication, willPresentError error: Error) -> Error
 }
 
-public extension UIApplication {
+@objc extension UIApplication {
 
-    @objc override func willPresentError(_ error: Error) -> Error {
+    override open func willPresentError(_ error: Error) -> Error {
         if let delegate = delegate as? ErrorPresentationApplicationDelegate,
             let delegateMethod = delegate.application(_:willPresentError:) {
             return delegateMethod(self, error)
@@ -30,7 +30,7 @@ public extension UIApplication {
         return super.willPresentError(error)
     }
 
-    @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
+    override open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
         let error = willPresentError(error)
         if error.isVisibleToUser, let window = windows.first(where: { $0.isKeyWindow }) {
             Alert(error: error).beginSheetModal(for: window) { (buttonNumber) in
@@ -48,8 +48,8 @@ public extension UIApplication {
 #elseif canImport(AppKit)
 import AppKit
 
-extension NSResponder {
-    @objc open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
+@objc extension NSResponder {
+    open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         if let nextResponder = nextResponder {
             nextResponder.presentError(willPresentError(error), didPresentHandler: handler)
         } else {
@@ -58,8 +58,8 @@ extension NSResponder {
     }
 }
 
-public extension NSApplication {
-    @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
+@objc extension NSApplication {
+    override open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         let error = willPresentError(error)
         if error.isVisibleToUser, let window = windows.first(where: { $0.isKeyWindow && $0.isVisible }) {
             NSAlert(error: error).beginSheetModal(for: window) { (response) in
@@ -75,8 +75,8 @@ public extension NSApplication {
     }
 }
 
-public extension NSWindowController {
-    @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
+@objc extension NSWindowController {
+    override open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         if let document = document as? NSDocument {
             document.presentError(willPresentError(error), didPresentHandler: handler)
         } else {
@@ -85,14 +85,14 @@ public extension NSWindowController {
     }
 }
 
-extension NSDocumentController {
-    @objc open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
+@objc extension NSDocumentController {
+    open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         NSApplication.shared.presentError(willPresentError(error), didPresentHandler: handler)
     }
 }
 
-extension NSDocument {
-    @objc open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
+@objc extension NSDocument {
+    open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         NSDocumentController.shared.presentError(willPresentError(error), didPresentHandler: handler)
     }
 }

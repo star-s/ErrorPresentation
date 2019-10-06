@@ -32,7 +32,7 @@ public extension UIApplication {
 
     @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
         let error = willPresentError(error)
-        if error.isVisibleToUser, let window = windows.first(where: { return $0.isKeyWindow }) {
+        if error.isVisibleToUser, let window = windows.first(where: { $0.isKeyWindow }) {
             Alert(error: error).beginSheetModal(for: window) { (buttonNumber) in
                 if let error = error as? RecoverableError {
                     error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
@@ -61,7 +61,7 @@ extension NSResponder {
 public extension NSApplication {
     @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         let error = willPresentError(error)
-        if error.isVisibleToUser, let window = windows.first(where: { return $0.isKeyWindow && $0.isVisible }) {
+        if error.isVisibleToUser, let window = windows.first(where: { $0.isKeyWindow && $0.isVisible }) {
             NSAlert(error: error).beginSheetModal(for: window) { (response) in
                 if let error = error as? RecoverableError {
                     error.attemptRecovery(optionIndex: response.buttonNumber, resultHandler: handler)

@@ -9,7 +9,7 @@ extension UIResponder {
 
     @objc open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
         if let next = next {
-            next.presentError(willPresentError(willPresentError(error)), didPresentHandler: handler)
+            next.presentError(willPresentError(error), didPresentHandler: handler)
         } else {
             UIApplication.shared.presentError(willPresentError(error), didPresentHandler: handler)
         }

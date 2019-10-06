@@ -8,14 +8,14 @@
 import Foundation
 
 public extension Error {
-    var isNonUserVisible: Bool {
+    var isVisibleToUser: Bool {
         switch self {
         case let error as CocoaError:
-            return error.code == .userCancelled
+            return error.code != .userCancelled
         case let error as URLError:
-            return error.code == .cancelled
+            return error.code != .cancelled
         default:
-            return false
+            return true
         }
     }
 }

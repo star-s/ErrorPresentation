@@ -7,7 +7,7 @@ extension UIResponder {
         return error
     }
 
-    @objc open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+    @objc open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
         next?.presentError(willPresentError(error), didPresentHandler: handler)
     }
 }
@@ -26,21 +26,18 @@ public extension UIApplication {
         return super.willPresentError(error)
     }
 
-    @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+    @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
         let error = willPresentError(error)
-        if error.isNonUserVisible {
-            return
-        }
-        if let window = windows.first(where: { return $0.isKeyWindow }) {
+        if error.isVisibleToUser, let window = windows.first(where: { return $0.isKeyWindow }) {
             UIAlert(error: error).beginSheetModal(for: window) { (buttonNumber) in
-                if let handler = handler {
-                    if let error = error as? RecoverableError {
-                        error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
-                    } else {
-                        handler(false)
-                    }
+                if let error = error as? RecoverableError {
+                    error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
+                } else {
+                    handler(false)
                 }
             }
+        } else {
+            DispatchQueue.main.async { handler(false) }
         }
     }
 }
@@ -48,33 +45,30 @@ public extension UIApplication {
 import AppKit
 
 extension NSResponder {
-    @objc open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+    @objc open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         nextResponder?.presentError(willPresentError(error), didPresentHandler: handler)
     }
 }
 
 public extension NSApplication {
-    @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+    @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         let error = willPresentError(error)
-        if error.isNonUserVisible {
-            return
-        }
-        if let window = windows.first(where: { return $0.isKeyWindow && $0.isVisible }) {
+        if error.isVisibleToUser, let window = windows.first(where: { return $0.isKeyWindow && $0.isVisible }) {
             NSAlert(error: error).beginSheetModal(for: window) { (response) in
-                if let handler = handler {
-                    if let error = error as? RecoverableError {
-                        error.attemptRecovery(optionIndex: response.buttonNumber, resultHandler: handler)
-                    } else {
-                        handler(false)
-                    }
+                if let error = error as? RecoverableError {
+                    error.attemptRecovery(optionIndex: response.buttonNumber, resultHandler: handler)
+                } else {
+                    handler(false)
                 }
             }
+        } else {
+            DispatchQueue.main.async { handler(false) }
         }
     }
 }
 
 public extension NSWindowController {
-    @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+    @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         let error = willPresentError(error)
         if let document = document as? NSDocument {
             document.presentError(error, didPresentHandler: handler)
@@ -85,7 +79,7 @@ public extension NSWindowController {
 }
 
 public extension NSWindow {
-    @objc override func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+    @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         let error = willPresentError(error)
         if let nextResponder = nextResponder {
             nextResponder.presentError(error, didPresentHandler: handler)
@@ -96,13 +90,13 @@ public extension NSWindow {
 }
 
 extension NSDocumentController {
-    @objc open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+    @objc open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         NSApplication.shared.presentError(willPresentError(error), didPresentHandler: handler)
     }
 }
 
 extension NSDocument {
-    @objc open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
+    @objc open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         NSDocumentController.shared.presentError(willPresentError(error), didPresentHandler: handler)
     }
 }

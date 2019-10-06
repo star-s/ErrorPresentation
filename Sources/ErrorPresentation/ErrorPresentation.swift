@@ -8,7 +8,11 @@ extension UIResponder {
     }
 
     @objc open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
-        next?.presentError(willPresentError(error), didPresentHandler: handler)
+        if let next = next {
+            next.presentError(willPresentError(willPresentError(error)), didPresentHandler: handler)
+        } else {
+            UIApplication.shared.presentError(willPresentError(error), didPresentHandler: handler)
+        }
     }
 }
 
@@ -46,7 +50,11 @@ import AppKit
 
 extension NSResponder {
     @objc open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
-        nextResponder?.presentError(willPresentError(error), didPresentHandler: handler)
+        if let nextResponder = nextResponder {
+            nextResponder.presentError(willPresentError(error), didPresentHandler: handler)
+        } else {
+            NSApplication.shared.presentError(willPresentError(error), didPresentHandler: handler)
+        }
     }
 }
 
@@ -69,22 +77,10 @@ public extension NSApplication {
 
 public extension NSWindowController {
     @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
-        let error = willPresentError(error)
         if let document = document as? NSDocument {
-            document.presentError(error, didPresentHandler: handler)
+            document.presentError(willPresentError(error), didPresentHandler: handler)
         } else {
-            NSApplication.shared.presentError(error, didPresentHandler: handler)
-        }
-    }
-}
-
-public extension NSWindow {
-    @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
-        let error = willPresentError(error)
-        if let nextResponder = nextResponder {
-            nextResponder.presentError(error, didPresentHandler: handler)
-        } else {
-            NSApplication.shared.presentError(error, didPresentHandler: handler)
+            super.presentError(error, didPresentHandler: handler)
         }
     }
 }
@@ -106,6 +102,4 @@ extension NSApplication.ModalResponse {
         return rawValue - 1000
     }
 }
-
 #endif
-

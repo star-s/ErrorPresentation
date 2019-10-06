@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Error {
+public extension Error {
     var isNonUserVisible: Bool {
         switch self {
         case let error as CocoaError:

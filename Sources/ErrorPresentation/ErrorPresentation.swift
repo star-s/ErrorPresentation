@@ -12,14 +12,14 @@ extension UIResponder {
     }
 }
 
-@objc public protocol ApplicationDelegateWithErrorPresentation: UIApplicationDelegate {
+@objc public protocol ErrorPresentationApplicationDelegate: UIApplicationDelegate {
     @objc optional func application(_ application: UIApplication, willPresentError error: Error) -> Error
 }
 
 public extension UIApplication {
 
     @objc override func willPresentError(_ error: Error) -> Error {
-        if let delegate = delegate as? ApplicationDelegateWithErrorPresentation,
+        if let delegate = delegate as? ErrorPresentationApplicationDelegate,
             let delegateMethod = delegate.application(_:willPresentError:) {
             return delegateMethod(self, error)
         }

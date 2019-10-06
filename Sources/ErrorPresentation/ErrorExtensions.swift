@@ -22,6 +22,6 @@ public extension Error {
 
 public extension LocalizedError where Self: RawRepresentable, Self.RawValue == String {
     var errorDescription: String? {
-        return self.rawValue
+        return rawValue
     }
 }

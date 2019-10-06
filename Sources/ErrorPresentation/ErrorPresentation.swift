@@ -33,7 +33,7 @@ public extension UIApplication {
     @objc override func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
         let error = willPresentError(error)
         if error.isVisibleToUser, let window = windows.first(where: { return $0.isKeyWindow }) {
-            UIAlert(error: error).beginSheetModal(for: window) { (buttonNumber) in
+            Alert(error: error).beginSheetModal(for: window) { (buttonNumber) in
                 if let error = error as? RecoverableError {
                     error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
                 } else {

@@ -8,7 +8,7 @@
 #if canImport(UIKit)
 import UIKit
 
-final class UIAlert: UIAlertController {
+final class Alert: UIAlertController {
     
     var handler: ((Int) -> Void)? = nil
     

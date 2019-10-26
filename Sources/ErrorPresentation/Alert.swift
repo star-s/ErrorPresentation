@@ -15,16 +15,17 @@ final class Alert: UIAlertController {
     public convenience init(error: Error) {
         self.init(title: nil, message: nil, preferredStyle: .alert)
         
-        var recoverySuggestion: String?
-        
         if let localizedError = error as? LocalizedError {
             title = localizedError.errorDescription
-            recoverySuggestion = localizedError.recoverySuggestion
+            if error is RecoverableError {
+                message = localizedError.recoverySuggestion
+            } else {
+                message = localizedError.failureReason
+            }
         } else {
             title = error.localizedDescription
         }
         if let recoverableError = error as? RecoverableError {
-            message = recoverySuggestion
             for option in recoverableError.recoveryOptions.enumerated().reversed() {
                 let action = UIAlertAction(title: option.element, style: option.offset == 0 ? .cancel : .default) { [weak self] (_) in
                     self?.selectButtonWith(index: option.offset)
@@ -42,11 +43,25 @@ final class Alert: UIAlertController {
         }
     }
     
-    public func beginSheetModal(for sheetWindow: UIWindow, completionHandler handler: ((Int) -> Void)? = nil) {
+    public func presentModal(for window: UIWindow, completionHandler handler: ((Int) -> Void)? = nil) {
         self.handler = handler
-        if let rootVC = sheetWindow.rootViewController {
-            rootVC.present(self, animated:  true, completion: nil)
+        if let rootVC = window.rootViewController {
+            rootVC.present(self, animated: true, completion: nil)
         }
+    }
+}
+#elseif canImport(AppKit)
+import AppKit
+
+extension NSAlert {
+    func presentModal(for window: NSWindow, completionHandler handler: ((Int) -> Void)? = nil) {
+        beginSheetModal(for: window, completionHandler: { handler?($0.buttonNumber) })
+    }
+}
+
+extension NSApplication.ModalResponse {
+    var buttonNumber: Int {
+        return rawValue - 1000
     }
 }
 

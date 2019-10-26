@@ -7,8 +7,10 @@
 
 import Foundation
 
+public typealias RecoveryOptionType = RawRepresentable & CaseIterable
+
 public protocol AsyncRecoverableError: RecoverableError {
-    associatedtype RecoveryOption: RawRepresentable, CaseIterable
+    associatedtype RecoveryOption: RecoveryOptionType
     
     func attemptRecovery(option: RecoveryOption, resultHandler handler: @escaping (Bool) -> Void)
 }
@@ -34,7 +36,7 @@ public extension AsyncRecoverableError where RecoveryOption.RawValue == String {
 }
 
 public protocol SyncRecoverableError: RecoverableError {
-    associatedtype RecoveryOption: RawRepresentable, CaseIterable
+    associatedtype RecoveryOption: RecoveryOptionType
     
     func attemptRecovery(option: RecoveryOption) -> Bool
 }

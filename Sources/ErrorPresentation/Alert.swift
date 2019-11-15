@@ -18,7 +18,7 @@ final class Alert: UIAlertController {
         if let localizedError = error as? LocalizedError {
             title = localizedError.errorDescription
             if error is RecoverableError {
-                message = localizedError.recoverySuggestion
+                message = [localizedError.failureReason, localizedError.recoverySuggestion].compactMap({ $0 }).joined(separator: "\n\n")
             } else {
                 message = localizedError.failureReason
             }

@@ -34,21 +34,23 @@ extension UIApplication {
         return super.willPresentError(error)
     }
 
-    var errorPresentaionWindow: UIWindow? { windows.first(where: { $0.isKeyWindow }) }
-    
     override open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         let error = willPresentError(error)
-        if error.isVisibleToUser, let window = errorPresentaionWindow {
-            Alert(error: error).presentModal(for: window) { (buttonNumber) in
-                let handler = handler ?? { (_) in }
-                if let error = error as? RecoverableError {
-                    error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
-                } else {
-                    handler(false)
-                }
-            }
-        } else {
+        if let error = error as? MaskableError, error.isMasked {
             DispatchQueue.main.async { handler?(false) }
+            return
+        }
+        guard let window = windows.first(where: { $0.isKeyWindow }) else {
+            DispatchQueue.main.async { handler?(false) }
+            return
+        }
+        Alert(error: error).presentModal(for: window) { (buttonNumber) in
+            let handler = handler ?? { (_) in }
+            if let error = error as? RecoverableError {
+                error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
+            } else {
+                handler(false)
+            }
         }
     }
 }
@@ -70,20 +72,22 @@ extension NSResponder {
 @objc
 extension NSApplication {
     
-    var errorPresentaionWindow: NSWindow? { windows.first(where: { $0.isKeyWindow && $0.isVisible }) }
-    
     override open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         let error = willPresentError(error)
-        if error.isVisibleToUser, let window = errorPresentaionWindow {
-            Alert(error: error).presentModal(for: window) { (buttonNumber) in
-                if let error = error as? RecoverableError {
-                    error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
-                } else {
-                    handler(false)
-                }
-            }
-        } else {
+        if let error = error as? MaskableError, error.isMasked {
             DispatchQueue.main.async { handler(false) }
+            return
+        }
+        guard let window = windows.first(where: { $0.isKeyWindow && $0.isVisible }) else {
+            DispatchQueue.main.async { handler(false) }
+            return
+        }
+        Alert(error: error).presentModal(for: window) { (buttonNumber) in
+            if let error = error as? RecoverableError {
+                error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
+            } else {
+                handler(false)
+            }
         }
     }
 }

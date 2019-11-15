@@ -8,7 +8,7 @@ extension UIResponder {
         return error
     }
 
-    open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
+    open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         if let next = next {
             next.presentError(willPresentError(error), didPresentHandler: handler)
         } else {
@@ -36,10 +36,11 @@ extension UIApplication {
 
     var errorPresentaionWindow: UIWindow? { windows.first(where: { $0.isKeyWindow }) }
     
-    override open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void = {_ in }) {
+    override open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         let error = willPresentError(error)
         if error.isVisibleToUser, let window = errorPresentaionWindow {
             Alert(error: error).presentModal(for: window) { (buttonNumber) in
+                let handler = handler ?? { (_) in }
                 if let error = error as? RecoverableError {
                     error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
                 } else {
@@ -47,7 +48,7 @@ extension UIApplication {
                 }
             }
         } else {
-            DispatchQueue.main.async { handler(false) }
+            DispatchQueue.main.async { handler?(false) }
         }
     }
 }

@@ -18,3 +18,16 @@ extension CocoaError: MaskableError {
 extension URLError: MaskableError {
     public var isMasked: Bool { code == .cancelled }
 }
+
+extension NSError: MaskableError {
+    public var isMasked: Bool {
+        switch self {
+        case let error as CocoaError:
+            return error.isMasked
+        case let error as URLError:
+            return error.isMasked
+        default:
+            return false
+        }
+    }
+}

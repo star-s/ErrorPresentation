@@ -16,16 +16,15 @@ extension UIResponder {
 @objc
 public protocol ErrorPresentationApplicationDelegate: UIApplicationDelegate {
     @objc
-    optional func application(_ application: UIApplication, willPresentError error: Error) -> Error
+    func application(_ application: UIApplication, willPresentError error: Error) -> Error
 }
 
 @objc
 extension UIApplication {
 
     override open func willPresentError(_ error: Error) -> Error {
-        if let delegate = delegate as? ErrorPresentationApplicationDelegate,
-            let delegateMethod = delegate.application(_:willPresentError:) {
-            return delegateMethod(self, error)
+        if let delegate = delegate as? ErrorPresentationApplicationDelegate {
+            return delegate.application(self, willPresentError: error)
         }
         return super.willPresentError(error)
     }
@@ -60,6 +59,26 @@ extension UIApplication {
         }
     }
 }
+
+@available(iOS 13.0, *)
+@objc
+public protocol ErrorPresentationSceneDelegate: UISceneDelegate {
+    @objc
+    func scene(_ scene: UIScene, willPresentError error: Error) -> Error
+}
+
+@available(iOS 13.0, *)
+@objc
+extension UIScene {
+    
+    override open func willPresentError(_ error: Error) -> Error {
+        if let delegate = delegate as? ErrorPresentationSceneDelegate {
+            return delegate.scene(self, willPresentError: error)
+        }
+        return super.willPresentError(error)
+    }
+}
+
 #elseif canImport(AppKit)
 import AppKit
 public typealias Alert = NSAlert

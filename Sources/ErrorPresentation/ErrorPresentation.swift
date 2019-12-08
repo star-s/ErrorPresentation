@@ -9,11 +9,7 @@ extension UIResponder {
     }
 
     open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
-        if let next = next {
-            next.presentError(willPresentError(error), didPresentHandler: handler)
-        } else {
-            UIApplication.shared.presentError(willPresentError(error), didPresentHandler: handler)
-        }
+        (next ?? UIApplication.shared).presentError(willPresentError(error), didPresentHandler: handler)
     }
 }
 
@@ -38,20 +34,20 @@ extension UIApplication {
         let error = willPresentError(error)
         switch error {
         case let error as CocoaError:
-            if error.code == .userCancelled {
-                DispatchQueue.main.async { handler?(false) }
+            guard error.code != .userCancelled else {
+                handler.map({ DispatchQueue.main.async(execute: $0) })
                 return
             }
         case let error as URLError:
-            if error.code == .cancelled {
-                DispatchQueue.main.async { handler?(false) }
+            guard error.code != .cancelled else {
+                handler.map({ DispatchQueue.main.async(execute: $0) })
                 return
             }
         default:
             break
         }
         guard let window = windows.first(where: { $0.isKeyWindow }) else {
-            DispatchQueue.main.async { handler?(false) }
+            handler.map({ DispatchQueue.main.async(execute: $0) })
             return
         }
         Alert(error: error).presentModal(for: window) { (buttonNumber) in
@@ -71,11 +67,7 @@ public typealias Alert = NSAlert
 @objc
 extension NSResponder {
     open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
-        if let nextResponder = nextResponder {
-            nextResponder.presentError(willPresentError(error), didPresentHandler: handler)
-        } else {
-            NSApplication.shared.presentError(willPresentError(error), didPresentHandler: handler)
-        }
+        (nextResponder ?? NSApplication.shared).presentError(willPresentError(error), didPresentHandler: handler)
     }
 }
 
@@ -86,20 +78,20 @@ extension NSApplication {
         let error = willPresentError(error)
         switch error {
         case let error as CocoaError:
-            if error.code == .userCancelled {
-                DispatchQueue.main.async { handler(false) }
+            guard error.code != .userCancelled else {
+                DispatchQueue.main.async(execute: handler)
                 return
             }
         case let error as URLError:
-            if error.code == .cancelled {
-                DispatchQueue.main.async { handler(false) }
+            guard error.code != .cancelled else {
+                DispatchQueue.main.async(execute: handler)
                 return
             }
         default:
             break
         }
         guard let window = windows.first(where: { $0.isKeyWindow && $0.isVisible }) else {
-            DispatchQueue.main.async { handler(false) }
+            DispatchQueue.main.async(execute: handler)
             return
         }
         Alert(error: error).presentModal(for: window) { (buttonNumber) in
@@ -138,3 +130,10 @@ extension NSDocument {
 }
 
 #endif
+
+extension DispatchQueue {
+    
+    func async(execute block: @escaping (Bool) -> Void, parameter: Bool = false) {
+        async { block(parameter) }
+    }
+}

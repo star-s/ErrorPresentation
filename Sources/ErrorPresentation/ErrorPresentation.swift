@@ -70,13 +70,13 @@ public protocol ErrorPresentationSceneDelegate: UISceneDelegate {
 @available(iOS 13.0, *)
 @objc
 extension UIScene {
-    
+    /*
     override open func willPresentError(_ error: Error) -> Error {
         if let delegate = delegate as? ErrorPresentationSceneDelegate {
             return delegate.scene(self, willPresentError: error)
         }
         return super.willPresentError(error)
-    }
+    }*/
 }
 
 #elseif canImport(AppKit)

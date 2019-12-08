@@ -27,7 +27,9 @@ public extension AsyncRecoverableError where RecoveryOption.RawValue == String {
     var recoveryOptions: [String] { RecoveryOption.allCases.map({ $0.rawValue }) }
     
     func attemptRecovery(optionIndex recoveryOptionIndex: Int, resultHandler handler: @escaping (Bool) -> Void) {
-        guard let option = RecoveryOption(rawValue: recoveryOptions[recoveryOptionIndex]) else { fatalError("Wrong option index") }
+        guard let option = RecoveryOption(rawValue: recoveryOptions[recoveryOptionIndex]) else {
+            fatalError("Wrong option index")
+        }
         attemptRecovery(option: option, resultHandler: handler)
     }
 }
@@ -43,7 +45,9 @@ public extension SyncRecoverableError where RecoveryOption.RawValue == String {
     var recoveryOptions: [String] { RecoveryOption.allCases.map({ $0.rawValue }) }
     
     func attemptRecovery(optionIndex recoveryOptionIndex: Int) -> Bool {
-        guard let option = RecoveryOption(rawValue: recoveryOptions[recoveryOptionIndex]) else { fatalError("Wrong option index") }
+        guard let option = RecoveryOption(rawValue: recoveryOptions[recoveryOptionIndex]) else {
+            fatalError("Wrong option index")
+        }
         return attemptRecovery(option: option)
     }
 }

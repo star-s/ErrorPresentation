@@ -36,9 +36,19 @@ extension UIApplication {
 
     override open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         let error = willPresentError(error)
-        if let error = error as? MaskableError, error.isMasked {
-            DispatchQueue.main.async { handler?(false) }
-            return
+        switch error {
+        case let error as CocoaError:
+            if error.code == .userCancelled {
+                DispatchQueue.main.async { handler?(false) }
+                return
+            }
+        case let error as URLError:
+            if error.code == .cancelled {
+                DispatchQueue.main.async { handler?(false) }
+                return
+            }
+        default:
+            break
         }
         guard let window = windows.first(where: { $0.isKeyWindow }) else {
             DispatchQueue.main.async { handler?(false) }
@@ -74,9 +84,19 @@ extension NSApplication {
     
     override open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         let error = willPresentError(error)
-        if let error = error as? MaskableError, error.isMasked {
-            DispatchQueue.main.async { handler(false) }
-            return
+        switch error {
+        case let error as CocoaError:
+            if error.code == .userCancelled {
+                DispatchQueue.main.async { handler(false) }
+                return
+            }
+        case let error as URLError:
+            if error.code == .cancelled {
+                DispatchQueue.main.async { handler(false) }
+                return
+            }
+        default:
+            break
         }
         guard let window = windows.first(where: { $0.isKeyWindow && $0.isVisible }) else {
             DispatchQueue.main.async { handler(false) }

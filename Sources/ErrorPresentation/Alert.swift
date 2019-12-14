@@ -45,11 +45,22 @@ final class Alert: UIAlertController {
     
     public func presentModal(for window: UIWindow, completionHandler handler: ((Int) -> Void)? = nil) {
         self.handler = handler
-        if let rootVC = window.rootViewController {
-            rootVC.present(self, animated: true, completion: nil)
+        if let presenter = window.rootViewController?.topLevelPresenter {
+            presenter.present(self, animated: true, completion: nil)
         }
     }
 }
+
+extension UIViewController {
+    
+    var topLevelPresenter: UIViewController {
+        if let next = presentedViewController {
+            return next.topLevelPresenter
+        }
+        return self
+    }
+}
+
 #elseif canImport(AppKit)
 import AppKit
 

@@ -23,25 +23,21 @@ public protocol ErrorPresentationApplicationDelegate: UIApplicationDelegate {
 extension UIApplication {
 
     override open func willPresentError(_ error: Error) -> Error {
-        if let delegate = delegate as? ErrorPresentationApplicationDelegate {
-            return delegate.application(self, willPresentError: error)
+        guard let delegate = delegate as? ErrorPresentationApplicationDelegate else {
+            return super.willPresentError(error)
         }
-        return super.willPresentError(error)
+        return delegate.application(self, willPresentError: error)
     }
 
     override open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         let error = willPresentError(error)
         switch error {
-        case let error as CocoaError:
-            guard error.code != .userCancelled else {
-                handler.map({ DispatchQueue.main.async(execute: $0) })
-                return
-            }
-        case let error as URLError:
-            guard error.code != .cancelled else {
-                handler.map({ DispatchQueue.main.async(execute: $0) })
-                return
-            }
+        case let error as CocoaError where error.code == .userCancelled:
+            handler.map({ DispatchQueue.main.async(execute: $0) })
+            return
+        case let error as URLError where error.code == .cancelled:
+            handler.map({ DispatchQueue.main.async(execute: $0) })
+            return
         default:
             break
         }
@@ -51,11 +47,11 @@ extension UIApplication {
         }
         Alert(error: error).presentModal(for: window) { (buttonNumber) in
             let handler = handler ?? { (_) in }
-            if let error = error as? RecoverableError {
-                error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
-            } else {
+            guard let error = error as? RecoverableError else {
                 handler(false)
+                return
             }
+            error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
         }
     }
 }
@@ -85,6 +81,7 @@ public typealias Alert = NSAlert
 
 @objc
 extension NSResponder {
+    
     open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         (nextResponder ?? NSApplication.shared).presentError(willPresentError(error), didPresentHandler: handler)
     }
@@ -96,16 +93,12 @@ extension NSApplication {
     override open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         let error = willPresentError(error)
         switch error {
-        case let error as CocoaError:
-            guard error.code != .userCancelled else {
-                DispatchQueue.main.async(execute: handler)
-                return
-            }
-        case let error as URLError:
-            guard error.code != .cancelled else {
-                DispatchQueue.main.async(execute: handler)
-                return
-            }
+        case let error as CocoaError where error.code == .userCancelled:
+            DispatchQueue.main.async(execute: handler)
+            return
+        case let error as URLError where error.code == .cancelled:
+            DispatchQueue.main.async(execute: handler)
+            return
         default:
             break
         }
@@ -114,28 +107,30 @@ extension NSApplication {
             return
         }
         Alert(error: error).presentModal(for: window) { (buttonNumber) in
-            if let error = error as? RecoverableError {
-                error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
-            } else {
+            guard let error = error as? RecoverableError else {
                 handler(false)
+                return
             }
+            error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
         }
     }
 }
 
 @objc
 extension NSWindowController {
+    
     override open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
-        if let document = document as? NSDocument {
-            document.presentError(willPresentError(error), didPresentHandler: handler)
-        } else {
+        guard let document = document as? NSDocument else {
             super.presentError(error, didPresentHandler: handler)
+            return
         }
+        document.presentError(willPresentError(error), didPresentHandler: handler)
     }
 }
 
 @objc
 extension NSDocumentController {
+    
     open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         NSApplication.shared.presentError(willPresentError(error), didPresentHandler: handler)
     }
@@ -143,6 +138,7 @@ extension NSDocumentController {
 
 @objc
 extension NSDocument {
+    
     open func presentError(_ error: Error, didPresentHandler handler: @escaping (Bool) -> Void) {
         NSDocumentController.shared.presentError(willPresentError(error), didPresentHandler: handler)
     }

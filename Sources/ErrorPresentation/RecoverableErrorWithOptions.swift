@@ -8,10 +8,10 @@
 import Foundation
 
 public protocol RecoverableErrorWithOptions: RecoverableError {
-    associatedtype RecoveryOption: ErrorRecoveryOption, CaseIterable
+    associatedtype RecoveryOption: ErrorRecoveryOption
 }
 
-extension RecoverableErrorWithOptions {
+extension RecoverableErrorWithOptions where RecoveryOption: CaseIterable {
     
     public var recoveryOptions: [String] {
         RecoveryOption.allCases.map({ $0.stringValue })

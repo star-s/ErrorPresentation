@@ -10,8 +10,6 @@ import UIKit
 
 final class Alert: UIAlertController {
     
-    var handler: ((Int) -> Void)? = nil
-    
     public convenience init(error: Error) {
         self.init(title: nil, message: nil, preferredStyle: .alert)
         
@@ -26,38 +24,37 @@ final class Alert: UIAlertController {
             title = error.localizedDescription
         }
         if let recoverableError = error as? RecoverableError {
-            for option in recoverableError.recoveryOptions.enumerated().reversed() {
-                let action = UIAlertAction(title: option.element, style: option.offset == 0 ? .cancel : .default) { [weak self] (_) in
+            recoverableError.recoveryOptions.enumerated().reversed().map { (option) in
+                UIAlertAction(title: option.element, style: option.offset == 0 ? .cancel : .default) { [weak self] (_) in
                     self?.selectButtonWith(index: option.offset)
                 }
-                addAction(action)
-            }
-        } else {
+            }.forEach({ addAction($0) })
+        }
+        if actions.isEmpty {
             addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] (_) in self?.selectButtonWith(index: 0) }))
         }
     }
     
-    func selectButtonWith(index: Int) {
-        if let handler = handler {
-            handler(index)
-        }
+    private func selectButtonWith(index: Int) {
+        handler?(index)
     }
     
+    private var handler: ((Int) -> Void)?
+    
     public func presentModal(for window: UIWindow, completionHandler handler: ((Int) -> Void)? = nil) {
-        self.handler = handler
-        if let presenter = window.rootViewController?.topLevelPresenter {
-            presenter.present(self, animated: true, completion: nil)
-        }
+        window.rootViewController?.topLevelPresenter.present(self, animated: true, completion: {
+            self.handler = handler
+        })
     }
 }
 
 extension UIViewController {
     
     var topLevelPresenter: UIViewController {
-        if let next = presentedViewController {
-            return next.topLevelPresenter
+        guard let next = presentedViewController else {
+            return self
         }
-        return self
+        return next.topLevelPresenter
     }
 }
 
@@ -71,9 +68,7 @@ extension NSAlert {
 }
 
 extension NSApplication.ModalResponse {
-    var buttonNumber: Int {
-        return rawValue - 1000
-    }
+    var buttonNumber: Int { rawValue - 1000 }
 }
 
 #endif

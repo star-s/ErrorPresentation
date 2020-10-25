@@ -31,6 +31,10 @@ extension UIApplication {
 
     override open func presentError(_ error: Error, didPresentHandler handler: ((Bool) -> Void)? = nil) {
         let error = willPresentError(error)
+        if passErrorsToNextResponder, let next = next {
+            next.presentError(error, didPresentHandler: handler)
+            return
+        }
         switch error {
         case let error as CocoaError where error.code == .userCancelled:
             handler.map({ DispatchQueue.main.async(execute: $0) })
@@ -54,7 +58,14 @@ extension UIApplication {
             error.attemptRecovery(optionIndex: buttonNumber, resultHandler: handler)
         }
     }
+    
+    open var passErrorsToNextResponder: Bool {
+        get { objc_getAssociatedObject(self, &passErrorKey) as? Bool ?? false }
+        set { objc_setAssociatedObject(self, &passErrorKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+    }
 }
+
+private var passErrorKey: Void?
 
 @available(iOS 13.0, *)
 @objc

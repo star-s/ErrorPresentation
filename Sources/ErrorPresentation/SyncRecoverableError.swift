@@ -14,8 +14,9 @@ public protocol SyncRecoverableError: RecoverableErrorWithOptions {
 public extension SyncRecoverableError {
     
     func attemptRecovery(optionIndex recoveryOptionIndex: Int) -> Bool {
-        guard let option = RecoveryOption(stringValue: recoveryOptions[recoveryOptionIndex]) else {
-            fatalError("Can't create option")
+        guard let option = RecoveryOption(recoveryOptions[recoveryOptionIndex]) else {
+            assertionFailure("Can't create option")
+			return false
         }
         return attemptRecovery(option: option)
     }

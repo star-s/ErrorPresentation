@@ -14,6 +14,6 @@ public protocol RecoverableErrorWithOptions: RecoverableError {
 extension RecoverableErrorWithOptions where RecoveryOption: CaseIterable {
     
     public var recoveryOptions: [String] {
-        RecoveryOption.allCases.map({ $0.stringValue })
+		RecoveryOption.allCases.map(\.description)
     }
 }

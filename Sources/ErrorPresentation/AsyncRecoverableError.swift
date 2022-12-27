@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol AsyncRecoverableError: RecoverableErrorWithOptions {
-    func attemptRecovery(option: RecoveryOption, resultHandler handler: @escaping (Bool) -> Void)
+    func attemptRecovery(option: RecoveryOption, resultHandler handler: @escaping (_ recovered: Bool) -> Void)
 }
 
 public extension AsyncRecoverableError {
@@ -18,7 +18,7 @@ public extension AsyncRecoverableError {
     }
     
     func attemptRecovery(optionIndex recoveryOptionIndex: Int, resultHandler handler: @escaping (Bool) -> Void) {
-        guard let option = RecoveryOption(stringValue: recoveryOptions[recoveryOptionIndex]) else {
+        guard let option = RecoveryOption(recoveryOptions[recoveryOptionIndex]) else {
             fatalError("Wrong option index")
         }
         attemptRecovery(option: option, resultHandler: handler)

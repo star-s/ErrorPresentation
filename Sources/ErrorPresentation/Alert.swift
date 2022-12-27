@@ -45,9 +45,9 @@ final class Alert: UIAlertController {
     private var handler: ((Int) -> Void)?
     
     public func presentModal(for window: UIWindow, completionHandler handler: ((Int) -> Void)? = nil) {
-        window.rootViewController?.topLevelPresenter.present(self, animated: true, completion: {
+        window.rootViewController?.topLevelPresenter.present(self, animated: true) {
             self.handler = handler
-        })
+        }
     }
 }
 
@@ -66,7 +66,9 @@ import AppKit
 
 extension NSAlert {
     func presentModal(for window: NSWindow, completionHandler handler: ((Int) -> Void)? = nil) {
-        beginSheetModal(for: window, completionHandler: { handler?($0.buttonNumber) })
+        beginSheetModal(for: window) {
+			handler?($0.buttonNumber)
+		}
     }
 }
 

@@ -15,7 +15,7 @@ public extension SyncRecoverableError {
     
     func attemptRecovery(optionIndex recoveryOptionIndex: Int) -> Bool {
         guard let option = RecoveryOption(recoveryOptions[recoveryOptionIndex]) else {
-            assertionFailure("Can't create option")
+            assertionFailure("Can't create option from - \(recoveryOptions[recoveryOptionIndex])")
 			return false
         }
         return attemptRecovery(option: option)

@@ -19,7 +19,9 @@ public extension AsyncRecoverableError {
     
     func attemptRecovery(optionIndex recoveryOptionIndex: Int, resultHandler handler: @escaping (Bool) -> Void) {
         guard let option = RecoveryOption(recoveryOptions[recoveryOptionIndex]) else {
-            fatalError("Wrong option index")
+			assertionFailure("Can't create option from - \(recoveryOptions[recoveryOptionIndex])")
+			handler(false)
+			return
         }
         attemptRecovery(option: option, resultHandler: handler)
     }

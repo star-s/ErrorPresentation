@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(AuthenticationServices)
+import AuthenticationServices
+#endif
 
 extension Error {
     var isCancelled: Bool {
@@ -17,6 +20,10 @@ extension Error {
             return error.code == .userCancelled
         case let error as URLError:
             return error.code == .cancelled
+        #if canImport(AuthenticationServices)
+        case let error as ASWebAuthenticationSessionError:
+            return error.code == .canceledLogin
+        #endif
         default:
             return false
         }
@@ -30,6 +37,8 @@ public protocol CancellationErrorProtocol {
 public extension CancellationErrorProtocol {
     var isCancellationError: Bool { true }
 }
+
+extension CancellationError: CancellationErrorProtocol {}
 
 extension LocalizationWrapper: CancellationErrorProtocol {
     public var isCancellationError: Bool { error.isCancelled }

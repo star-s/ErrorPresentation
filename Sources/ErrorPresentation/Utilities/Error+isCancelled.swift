@@ -30,3 +30,11 @@ public protocol CancellationErrorProtocol {
 public extension CancellationErrorProtocol {
     var isCancellationError: Bool { true }
 }
+
+extension LocalizationWrapper: CancellationErrorProtocol {
+    public var isCancellationError: Bool { error.isCancelled }
+}
+
+extension RecoveryWrapper: CancellationErrorProtocol {
+    public var isCancellationError: Bool { error.isCancelled }
+}

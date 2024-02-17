@@ -7,6 +7,7 @@
 
 import Foundation
 
+@available(*, deprecated, message: "Use RecoverableErrorWithOptions instead")
 public protocol AsyncRecoverableError: RecoverableErrorWithOptions {
     func attemptRecovery(option: RecoveryOption, resultHandler handler: @escaping (_ recovered: Bool) -> Void)
 }

@@ -7,6 +7,7 @@
 
 import Foundation
 
+@available(*, deprecated, message: "Use RecoverableErrorWithOptions instead")
 public protocol SyncRecoverableError: RecoverableErrorWithOptions {
     func attemptRecovery(option: RecoveryOption) -> Bool
 }

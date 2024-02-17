@@ -74,9 +74,9 @@ extension UIApplication {
 
 	private func shouldSkipPresentingError(_ error: Error) -> Bool {
 		guard let delegate = delegate as? ErrorPresentationApplicationDelegate else {
-			return error.shouldSkipPresentation
+			return error.isCancelled
 		}
-		return delegate.application?(self, shouldSkipErrorPresentation: error) ?? error.shouldSkipPresentation
+		return delegate.application?(self, shouldSkipErrorPresentation: error) ?? error.isCancelled
 	}
 }
 

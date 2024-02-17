@@ -17,3 +17,5 @@ extension ErrorRecoveryOption where Self: RawRepresentable, Self.RawValue == Str
 		self.init(rawValue: description)
 	}
 }
+
+extension String: ErrorRecoveryOption {}

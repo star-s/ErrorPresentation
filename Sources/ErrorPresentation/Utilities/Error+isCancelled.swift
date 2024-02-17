@@ -10,7 +10,7 @@ import Foundation
 import AuthenticationServices
 #endif
 
-extension Error {
+public extension Error {
     var isCancelled: Bool {
         if let cancellationError = self as? CancellationErrorProtocol {
             return cancellationError.isCancellationError

@@ -42,6 +42,7 @@ extension RecoveryWrapper: CustomStringConvertible {
 public extension LocalizedError {
 
     func addRecovery<T: ErrorRecoveryOption>(
+        _ type: T.Type = T.self,
         options: [T],
         _ recoveryAttempter: @escaping (T) throws -> Void
     ) -> RecoveryWrapper<T> {
@@ -53,6 +54,7 @@ public extension LocalizedError {
     }
 
     func addRecovery<T: ErrorRecoveryOption & CaseIterable>(
+        _ type: T.Type = T.self,
         _ recoveryAttempter: @escaping (T) throws -> Void
     ) -> RecoveryWrapper<T> {
         RecoveryWrapper(

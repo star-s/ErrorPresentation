@@ -9,6 +9,7 @@ import Foundation
 #if canImport(AuthenticationServices)
 import AuthenticationServices
 #endif
+import CloudKit
 
 public extension Error {
     var isCancelled: Bool {
@@ -24,6 +25,8 @@ public extension Error {
         case let error as ASWebAuthenticationSessionError:
             return error.code == .canceledLogin
         #endif
+        case let error as CKError:
+            return error.code == .operationCancelled
         default:
             return false
         }

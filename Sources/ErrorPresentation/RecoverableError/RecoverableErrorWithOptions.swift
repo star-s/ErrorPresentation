@@ -8,12 +8,25 @@
 import Foundation
 
 public protocol RecoverableErrorWithOptions: RecoverableError {
-    associatedtype RecoveryOption: ErrorRecoveryOption
+    associatedtype RecoveryOptions: ErrorRecoveryOption
+
+    func attemptRecovery(option: RecoveryOptions) -> Bool
 }
 
-extension RecoverableErrorWithOptions where RecoveryOption: CaseIterable {
-    
+public extension RecoverableErrorWithOptions {
+
+    func attemptRecovery(optionIndex recoveryOptionIndex: Int) -> Bool {
+        guard let option = RecoveryOptions(recoveryOptions[recoveryOptionIndex]) else {
+            assertionFailure("Can't create option from - \(recoveryOptions[recoveryOptionIndex])")
+            return false
+        }
+        return attemptRecovery(option: option)
+    }
+}
+
+extension RecoverableErrorWithOptions where RecoveryOptions: CaseIterable {
+
     public var recoveryOptions: [String] {
-		RecoveryOption.allCases.map(\.description)
+		RecoveryOptions.allCases.map(\.description)
     }
 }

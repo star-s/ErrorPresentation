@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
 public struct DefaultErrorMessage: View {
 
     public var body: some View {
@@ -34,6 +35,7 @@ public struct DefaultErrorMessage: View {
     }
 }
 
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
 #Preview {
     VStack {
         DefaultErrorMessage(error: URLError(.badURL).addLocalization(

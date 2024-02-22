@@ -15,6 +15,7 @@ public extension CancellationErrorProtocol {
     var isCancellationError: Bool { true }
 }
 
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
 extension CancellationError: CancellationErrorProtocol {}
 
 extension LocalizationWrapper: CancellationErrorProtocol {

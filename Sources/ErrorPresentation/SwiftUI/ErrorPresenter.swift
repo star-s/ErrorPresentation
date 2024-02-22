@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
 public final class ErrorPresenter: ObservableObject {
 
     public private(set) var error: Error? {
@@ -40,6 +41,7 @@ public final class ErrorPresenter: ObservableObject {
     }
 }
 
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
 fileprivate extension ErrorPresenter {
 
     var showUI: Binding<Bool> {

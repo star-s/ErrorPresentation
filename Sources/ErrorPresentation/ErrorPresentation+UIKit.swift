@@ -53,7 +53,13 @@ extension UIApplication {
     }
 
     private var errorPresenter: UIViewController? {
-        connectedScenes
+        guard #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) else {
+            return windows
+                .first(where: { $0.isKeyWindow })?
+                .rootViewController?
+                .topLevelPresenter
+        }
+        return connectedScenes
             .filter { $0.activationState == .foregroundActive }
             .compactMap { $0 as? UIWindowScene }
             .first?

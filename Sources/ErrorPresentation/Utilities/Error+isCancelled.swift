@@ -29,21 +29,3 @@ public extension Error {
         }
     }
 }
-
-public protocol CancellationErrorProtocol {
-    var isCancellationError: Bool { get }
-}
-
-public extension CancellationErrorProtocol {
-    var isCancellationError: Bool { true }
-}
-
-extension CancellationError: CancellationErrorProtocol {}
-
-extension LocalizationWrapper: CancellationErrorProtocol {
-    public var isCancellationError: Bool { error.isCancelled }
-}
-
-extension RecoveryWrapper: CancellationErrorProtocol {
-    public var isCancellationError: Bool { error.isCancelled }
-}

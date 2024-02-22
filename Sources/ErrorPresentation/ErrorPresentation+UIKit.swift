@@ -17,35 +17,26 @@ extension UIResponder {
 public protocol ErrorPresentationApplicationDelegate: UIApplicationDelegate {
     @objc
     func application(_ application: UIApplication, willPresentError error: Error) -> Error
-	@objc
-	optional func application(_ application: UIApplication, shouldPassErrorToNextResponder error: Error) -> Bool
-	@objc
-	optional func application(_ application: UIApplication, shouldSkipErrorPresentation error: Error) -> Bool
 }
 
 @objc
 extension UIApplication {
 
-	private typealias PresentationAnchor = UIWindow
-
-    override open func willPresentError(_ error: Error) -> Error {
+    open override func willPresentError(_ error: Error) -> Error {
         guard let delegate = delegate as? ErrorPresentationApplicationDelegate else {
             return super.willPresentError(error)
         }
         return delegate.application(self, willPresentError: error)
     }
 
-    override open func presentError(_ error: Error, didPresentHandler handler: ((_ recovered: Bool) -> Void)? = nil) {
+    open override func presentError(_ error: Error, didPresentHandler handler: ((_ recovered: Bool) -> Void)? = nil) {
         let error = willPresentError(error)
-        if let next = next, shouldPassErrorToNextResponder(error) {
-            next.presentError(error, didPresentHandler: handler)
+
+        if error.isCancelled {
+            handler?(false)
             return
         }
-		if shouldSkipPresentingError(error) {
-			handler?(false)
-			return
-		}
-		guard let presenter = presentationAnchor(for: error)?.rootViewController?.topLevelPresenter else {
+		guard let presenter = errorPresenter else {
 			handler?(false)
 			return
 		}
@@ -61,23 +52,16 @@ extension UIApplication {
 		presenter.present(alert, animated: true)
     }
 
-	private func presentationAnchor(for error: Error) -> PresentationAnchor? {
-		windows.first(where: { $0.isKeyWindow })
-	}
-
-	private func shouldPassErrorToNextResponder(_ error: Error) -> Bool {
-		guard let delegate = delegate as? ErrorPresentationApplicationDelegate else {
-			return false
-		}
-		return delegate.application?(self, shouldPassErrorToNextResponder: error) ?? false
-	}
-
-	private func shouldSkipPresentingError(_ error: Error) -> Bool {
-		guard let delegate = delegate as? ErrorPresentationApplicationDelegate else {
-			return error.isCancelled
-		}
-		return delegate.application?(self, shouldSkipErrorPresentation: error) ?? error.isCancelled
-	}
+    private var errorPresenter: UIViewController? {
+        connectedScenes
+            .filter { $0.activationState == .foregroundActive }
+            .compactMap { $0 as? UIWindowScene }
+            .first?
+            .windows
+            .first(where: { $0.isKeyWindow })?
+            .rootViewController?
+            .topLevelPresenter
+    }
 }
 
 private extension UIViewController {
@@ -88,5 +72,4 @@ private extension UIViewController {
 		return self
 	}
 }
-
 #endif

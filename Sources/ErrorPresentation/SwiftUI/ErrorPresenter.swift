@@ -11,18 +11,15 @@ import SwiftUI
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
 public final class ErrorPresenter: ObservableObject {
 
-    public private(set) var error: Error? {
-        willSet {
-            self.objectWillChange.send()
-        }
-    }
+    @Published
+    public private(set) var error: Error?
 
     public init(error: Error? = nil) {
         self.error = error
     }
 
     public func present(error: Error) {
-        DispatchQueue.main.async {
+        Task { @MainActor in
             if error.isCancelled {
                 if self.error != nil {
                     self.error = nil
@@ -34,22 +31,9 @@ public final class ErrorPresenter: ObservableObject {
     }
 
     public func clearError() {
-        DispatchQueue.main.async {
+        Task { @MainActor in
             guard self.error != nil else { return }
             self.error = nil
-        }
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
-fileprivate extension ErrorPresenter {
-
-    var showUI: Binding<Bool> {
-        Binding {
-            self.error != nil
-        } set: {
-            guard $0 == false else { return }
-            self.clearError()
         }
     }
 }
@@ -79,11 +63,21 @@ extension View {
     }
 }
 
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
+fileprivate extension ErrorPresenter {
+
+    var showUI: Binding<Bool> {
+        Binding {
+            self.error != nil
+        } set: {
+            guard $0 == false else { return }
+            self.clearError()
+        }
+    }
+}
+
 private extension Optional where Wrapped: Error {
     var title: String {
-        guard case .some(let wrapped) = self else {
-            return ""
-        }
-        return (wrapped as? LocalizedError)?.errorDescription ?? wrapped.localizedDescription
+        flatMap { ($0 as? LocalizedError)?.localizedDescription } ?? ""
     }
 }

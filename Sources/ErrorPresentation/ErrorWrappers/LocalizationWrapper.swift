@@ -23,8 +23,8 @@ public extension Error {
 
     func addLocalization(
         errorDescription: String?,
-        failureReason: String?,
-        recoverySuggestion: String?
+        failureReason: String? = nil,
+        recoverySuggestion: String? = nil
     ) -> LocalizationWrapper {
         LocalizationWrapper(
             error: self,

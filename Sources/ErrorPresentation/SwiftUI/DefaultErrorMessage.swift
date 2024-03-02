@@ -17,11 +17,7 @@ public struct DefaultErrorMessage: View {
     private let message: String
 
     public init(error: Error) {
-        guard let localizedError = error as? LocalizedError else {
-            message = error.localizedDescription
-            return
-        }
-        message = localizedError.message
+        message = (error as? LocalizedError)?.message ?? error.localizedDescription
     }
 }
 
@@ -49,27 +45,5 @@ public struct DefaultErrorMessage: View {
             error: URLError(.badServerResponse)
         ).border(.gray)
         Spacer()
-    }
-}
-
-private extension LocalizedError {
-    var message: String {
-        let message = [
-            failureReason,
-            recoverySuggestion
-        ]
-            .compactMap({ $0 })
-            .joined(separator: "\n\n")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        return hasNoTitle && message.isEmpty ? localizedDescription : message
-    }
-
-    var hasNoTitle: Bool {
-        guard let errorDescription else {
-            return true
-        }
-        return errorDescription
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .isEmpty
     }
 }

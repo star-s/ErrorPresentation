@@ -59,46 +59,23 @@ extension UIApplication {
             handler?(false)
             return
         }
-		guard let presenter = errorPresenter else {
+		guard let keyWindow else {
 			handler?(false)
 			return
 		}
-		let alert = UIAlertController(error: error) { recoveryOptionIndex in
-			guard let error = error as? RecoverableError else {
-				handler?(false)
-				return
-			}
-			error.attemptRecovery(optionIndex: recoveryOptionIndex) { recovered in
-				handler?(recovered)
-			}
-		}
-		presenter.present(alert, animated: true)
+        UIAlertController(error: error, resultHandler: handler).show(on: keyWindow)
     }
 
-    private var errorPresenter: UIViewController? {
+    private var keyWindow: UIWindow? {
         guard #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) else {
-            return windows
-                .first(where: { $0.isKeyWindow })?
-                .rootViewController?
-                .topLevelPresenter
+            return windows.first(where: { $0.isKeyWindow })
         }
         return connectedScenes
             .filter { $0.activationState == .foregroundActive }
             .compactMap { $0 as? UIWindowScene }
             .first?
             .windows
-            .first(where: { $0.isKeyWindow })?
-            .rootViewController?
-            .topLevelPresenter
+            .first(where: { $0.isKeyWindow })
     }
-}
-
-private extension UIViewController {
-	var topLevelPresenter: UIViewController {
-		if let next = presentedViewController {
-			return next.topLevelPresenter
-		}
-		return self
-	}
 }
 #endif

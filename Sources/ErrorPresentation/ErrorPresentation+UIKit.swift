@@ -75,7 +75,7 @@ extension UIApplication {
             .compactMap { $0 as? UIWindowScene }
             .first?
             .windows
-            .first(where: { $0.isKeyWindow })
+            .first(where: \.isKeyWindow)
     }
 }
 #endif

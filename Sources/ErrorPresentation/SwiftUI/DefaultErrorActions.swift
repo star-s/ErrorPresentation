@@ -27,7 +27,11 @@ public struct DefaultErrorActions: View {
 
     private let buttons: [ButtonVM]
 
-    public init(error: Error, emptyOptionsButtonTitle: String = "OK") {
+    public init(
+        error: Error,
+        emptyOptionsButtonTitle: String = "OK",
+        resultHandler handler: ((_ recovered: Bool) -> Void)? = nil
+    ) {
         var buttons: [ButtonVM] = []
 
         if let recoverableError = error as? RecoverableError {
@@ -37,7 +41,9 @@ public struct DefaultErrorActions: View {
                     role: option.offset == 0 ? .cancel : nil,
                     title: option.element
                 ) {
-                    _ = recoverableError.attemptRecovery(optionIndex: option.offset)
+                    recoverableError.attemptRecovery(optionIndex: option.offset) { recovered in
+                        handler?(recovered)
+                    }
                 }
             }
         }

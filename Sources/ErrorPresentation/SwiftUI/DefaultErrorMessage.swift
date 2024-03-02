@@ -21,33 +21,55 @@ public struct DefaultErrorMessage: View {
             message = error.localizedDescription
             return
         }
-        let message = [
-            localizedError.failureReason,
-            localizedError.recoverySuggestion
-        ]
-            .compactMap({ $0 })
-            .joined(separator: "\n\n")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        self.message = message.isEmpty && (localizedError.errorDescription ?? "").isEmpty ?
-            localizedError.localizedDescription :
-            message
+        message = localizedError.message
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *)
 #Preview {
     VStack {
-        DefaultErrorMessage(error: URLError(.badURL).addLocalization(
-            errorDescription: "description",
-            failureReason: "failure reason",
-            recoverySuggestion: "recovery suggestion"
-        )).border(.blue)
+        Spacer()
+        DefaultErrorMessage(
+            error: URLError(.badURL).addLocalization(
+                errorDescription: "description",
+                failureReason: "failure reason",
+                recoverySuggestion: "recovery suggestion"
+            )
+        ).border(.blue)
+        Spacer()
+        DefaultErrorMessage(
+            error: URLError(.badURL).addLocalization(
+                errorDescription: nil,
+                failureReason: "",
+                recoverySuggestion: ""
+            )
+        ).border(.red)
+        Spacer()
+        DefaultErrorMessage(
+            error: URLError(.badServerResponse)
+        ).border(.gray)
+        Spacer()
+    }
+}
 
-        DefaultErrorMessage(error: URLError(.badURL).addLocalization(
-            errorDescription: nil,
-            failureReason: "",
-            recoverySuggestion: ""
-        )).border(.red)
+private extension LocalizedError {
+    var message: String {
+        let message = [
+            failureReason,
+            recoverySuggestion
+        ]
+            .compactMap({ $0 })
+            .joined(separator: "\n\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return hasNoTitle && message.isEmpty ? localizedDescription : message
+    }
+
+    var hasNoTitle: Bool {
+        guard let errorDescription else {
+            return true
+        }
+        return errorDescription
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty
     }
 }

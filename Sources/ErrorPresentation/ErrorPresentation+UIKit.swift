@@ -59,16 +59,16 @@ extension UIApplication {
             handler?(false)
             return
         }
-		guard let keyWindow else {
+		guard let window else {
 			handler?(false)
 			return
 		}
-        UIAlertController(error: error, resultHandler: handler).show(on: keyWindow)
+        UIAlertController(error: error, resultHandler: handler).show(on: window)
     }
 
-    private var keyWindow: UIWindow? {
+    private var window: UIWindow? {
         guard #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.0, *) else {
-            return windows.first(where: { $0.isKeyWindow })
+            return keyWindow
         }
         return connectedScenes
             .filter { $0.activationState == .foregroundActive }
